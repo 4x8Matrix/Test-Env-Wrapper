@@ -1,0 +1,4 @@
+*.rbxl
+*.lock
+
+Packages/**
