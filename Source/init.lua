@@ -45,18 +45,19 @@ function TestMacroWrapper.Check:Throw(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local success = pcall(func)
 
-	TestService:Check(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+	TestService:Check(not success, "test failed: method did not throw", callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Check:NoThrow(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local thread = coroutine.create(func)
+	local success, message = pcall(thread)
 
-	TestService:Check(success, message, callingEnvironment["script"], callingScriptLn)
+	TestService:Check(success, "test failed: " .. message .. "\n" .. debug.traceback(thread), callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Check:Equal<T>(a: T, b: T)
@@ -119,18 +120,19 @@ function TestMacroWrapper.Require:Throw(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local success = pcall(func)
 
-	TestService:Require(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+	TestService:Require(not success, "test failed: method did not throw", callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Require:NoThrow(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local thread = coroutine.create(func)
+	local success, message = pcall(thread)
 
-	TestService:Require(success, message, callingEnvironment["script"], callingScriptLn)
+	TestService:Require(success, "test failed: " .. message .. "\n" .. debug.traceback(thread), callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Require:Equal<T>(a: T, b: T)
@@ -193,18 +195,19 @@ function TestMacroWrapper.Warn:Throw(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local success = pcall(func)
 
-	TestService:Warn(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+	TestService:Warn(not success, "test failed: Expected function to throw", callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Warn:NoThrow(func: () -> ())
 	local callingEnvironment = getfenv(2)
 	local callingScriptLn = debug.info(2, "l")
 
-	local success, message = pcall(func)
+	local thread = coroutine.create(func)
+	local success, message = pcall(thread)
 
-	TestService:Warn(success, message, callingEnvironment["script"], callingScriptLn)
+	TestService:Warn(success, "test failed: " .. message .. "\n" .. debug.traceback(thread), callingEnvironment["script"], callingScriptLn)
 end
 
 function TestMacroWrapper.Warn:Equal<T>(a: T, b: T)
