@@ -1,12 +1,12 @@
 [package]
-name = "4x8matrix/test-env-wrapper"
+name = "4x8matrix/test-macro-wrapper"
 version = "1.1.2"
 realm = "shared"
 registry = "https://github.com/upliftgames/wally-index"
 licence = "Unlicense"
 authors = ["AsynchronousMatrix <Catbob614@gmail.com>"]
 
-description = "A Roblox resource to wrap up & simplify the globals injected by the Roblox 'TestService'"
+description = "A Roblox resource to remove obscurity & simplify the Roblox 'Macro' tests."
 
 exclude = ["**"]
 include = ["Source", "Source/*", "default.project.json", "wally.lock", "wally.toml", "LICENCE", "README.md"]

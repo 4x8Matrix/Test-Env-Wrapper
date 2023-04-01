@@ -1,53 +1,252 @@
-local TestEnvWrapper = { }
+local TestService = game:GetService("TestService")
 
-function TestEnvWrapper.compileRBXResourceLibrary()
+local TestMacroWrapper = { }
+
+TestMacroWrapper.Check = { }
+TestMacroWrapper.Require = { }
+TestMacroWrapper.Warn = { }
+
+function TestMacroWrapper:Message(msg: string): ()
 	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
 
-	return {
-		["Check"] = setmetatable({
-			["Message"] = callingEnvironment.RBX_CHECK_MESSAGE :: (cond: boolean, failMsg: string) -> (),
-			["Throw"] = callingEnvironment.RBX_CHECK_THROW :: (func: () -> ()) -> (),
-			["NoThrow"] = callingEnvironment.RBX_CHECK_NO_THROW :: (func: () -> ()) -> (),
-			["Equal"] = callingEnvironment.RBX_CHECK_EQUAL :: <T>(a: T, b: T) -> (),
-			["NotEqual"] = callingEnvironment.RBX_CHECK_NE :: <A, B>(a: A, b: B) -> (),
-			["GreaterEqual"] = callingEnvironment.RBX_CHECK_GE :: (a: number, b: number) -> (),
-			["LesserEqual"] = callingEnvironment.RBX_CHECK_LE :: (a: number, b: number) -> (),
-			["GreaterThan"] = callingEnvironment.RBX_CHECK_GT :: (a: number, b: number) -> (),
-			["LesserThan"] = callingEnvironment.RBX_CHECK_LT :: (a: number, b: number) -> (),
-		}, {
-			__call = callingEnvironment.RBX_CHECK :: (cond: boolean) -> ()
-		}),
-		["Require"] = setmetatable({
-			["Message"] = callingEnvironment.RBX_REQUIRE_MESSAGE :: (cond: boolean, failMsg: string) -> (),
-			["Throw"] = callingEnvironment.RBX_REQUIRE_THROW :: (func: () -> ()) -> (),
-			["NoThrow"] = callingEnvironment.RBX_REQUIRE_NO_THROW :: (func: () -> ()) -> (),
-			["Equal"] = callingEnvironment.RBX_REQUIRE_EQUAL :: <T>(a: T, b: T) -> (),
-			["NotEqual"] = callingEnvironment.RBX_REQUIRE_NE :: <A, B>(a: A, b: B) -> (),
-			["GreaterEqual"] = callingEnvironment.RBX_REQUIRE_GE :: (a: number, b: number) -> (),
-			["LesserEqual"] = callingEnvironment.RBX_REQUIRE_LE :: (a: number, b: number) -> (),
-			["GreaterThan"] = callingEnvironment.RBX_REQUIRE_GT :: (a: number, b: number) -> (),
-			["LesserThan"] = callingEnvironment.RBX_REQUIRE_LT :: (a: number, b: number) -> (),
-		}, {
-			__call = callingEnvironment.RBX_REQUIRE :: (cond: boolean) -> ()
-		}),
-		["Warn"] = setmetatable({
-			["Message"] = callingEnvironment.RBX_WARN_MESSAGE :: (cond: boolean, failMsg: string) -> (),
-			["Throw"] = callingEnvironment.RBX_WARN_THROW :: (func: () -> ()) -> (),
-			["NoThrow"] = callingEnvironment.RBX_WARN_NO_THROW :: (func: () -> ()) -> (),
-			["Equal"] = callingEnvironment.RBX_WARN_EQUAL :: <T>(a: T, b: T) -> (),
-			["NotEqual"] = callingEnvironment.RBX_WARN_NE :: <A, B>(a: A, b: B) -> (),
-			["GreaterEqual"] = callingEnvironment.RBX_WARN_GE :: (a: number, b: number) -> (),
-			["LesserEqual"] = callingEnvironment.RBX_WARN_LE :: (a: number, b: number) -> (),
-			["GreaterThan"] = callingEnvironment.RBX_WARN_GT :: (a: number, b: number) -> (),
-			["LesserThan"] = callingEnvironment.RBX_WARN_LT :: (a: number, b: number) -> (),
-		}, {
-			__call = callingEnvironment.RBX_WARN :: (cond: boolean) -> ()
-		}),
-
-		["Error"] = callingEnvironment.RBX_ERROR :: (msg: string) -> (),
-		["Fail"] = callingEnvironment.RBX_FAIL :: (msg: string) -> (),
-		["Message"] = callingEnvironment.RBX_MESSAGE :: (msg: string) -> (),
-	}
+	return TestService:Message(msg, callingEnvironment["script"], callingScriptLn)
 end
 
-return TestEnvWrapper
+function TestMacroWrapper:Error(msg: string): ()
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	return TestService:Error(msg, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper:Fail(msg: string): ()
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	return TestService:Fail(msg, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:Check(cond: boolean)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(cond, "test failed:" .. tostring(cond), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:Message(cond: boolean, message: string)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(cond, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:Throw(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Check(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:NoThrow(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Check(success, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:Equal<T>(a: T, b: T)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a == b, "test failed: " .. tostring(a) .. " == " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:NotEqual<A, B>(a: A, b: B)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a ~= b, "test failed: " .. tostring(a) .. " ~= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:GreaterOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:LesserOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:GreaterThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Check:LesserThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Check(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:Require(cond: boolean)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(cond, "test failed:" .. tostring(cond), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:Message(cond: boolean, message: string)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(cond, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:Throw(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Require(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:NoThrow(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Require(success, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:Equal<T>(a: T, b: T)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a == b, "test failed: " .. tostring(a) .. " == " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:NotEqual<A, B>(a: A, b: B)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a ~= b, "test failed: " .. tostring(a) .. " ~= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:GreaterOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:LesserOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:GreaterThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Require:LesserThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Require(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:Warn(cond: boolean)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(cond, "test failed:" .. tostring(cond), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:Message(cond: boolean, message: string)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(cond, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:Throw(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Warn(not success, "test failed", callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:NoThrow(func: () -> ())
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	local success, message = pcall(func)
+
+	TestService:Warn(success, message, callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:Equal<T>(a: T, b: T)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a == b, "test failed: " .. tostring(a) .. " == " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:NotEqual<A, B>(a: A, b: B)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a ~= b, "test failed: " .. tostring(a) .. " ~= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:GreaterOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:LesserOrEqualTo(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:GreaterThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a >= b, "test failed: " .. tostring(a) .. " >= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+function TestMacroWrapper.Warn:LesserThan(a: number, b: number)
+	local callingEnvironment = getfenv(2)
+	local callingScriptLn = debug.info(2, "l")
+
+	TestService:Warn(a <= b, "test failed: " .. tostring(a) .. " <= " .. tostring(b), callingEnvironment["script"], callingScriptLn)
+end
+
+return TestMacroWrapper :: typeof(TestMacroWrapper)
